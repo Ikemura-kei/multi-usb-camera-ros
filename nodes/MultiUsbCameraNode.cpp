@@ -1,3 +1,13 @@
+/**
+ * @file MultiUsbCameraNode.cpp
+ * @author IKEMURA, Kei (ikemurakei2001@gmial.com)
+ * @brief This file defines the node to show and switch different camera sources
+ * @version 0.1
+ * @date 2023-06-27
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include <ros/ros.h>
 
 #include <UsbCamera.hpp>

@@ -1,3 +1,13 @@
+/**
+ * @file UsbCamera.cpp
+ * @author IKEMURA, Kei (ikemurakei2001@gmial.com)
+ * @brief The definition of the single usb camera handler class
+ * @version 0.1
+ * @date 2023-06-27
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #include <UsbCamera.hpp>
 #include <opencv2/opencv.hpp>
 #include <unistd.h>
