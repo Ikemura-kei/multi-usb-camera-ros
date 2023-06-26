@@ -35,7 +35,7 @@ namespace MultiUsbCamera
         /**
          * @brief Copy constructor
          *
-         * @param other
+         * @param other the source object to copy from
          */
         UsbCamera(const UsbCamera &other);
         /**
