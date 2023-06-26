@@ -26,17 +26,17 @@ namespace MultiUsbCamera
 
     UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, std::string device) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH)
     {
-        // std::string gstreamerStr = "v4l2src device=DEVICE_PLACEHOLDER ! image/jpeg, width=IMAGE_WIDTH_PLACEHOLDER, height=IMAGE_HEIGHT_PLACEHOLDER, framerate=30/1 ! jpegdec ! videoconvert ! appsink";
-        // std::string device = "/dev/video" + DEVICE;
-        // gstreamerStr = std::regex_replace(gstreamerStr, std::regex("DEVICE_PLACEHOLDER"), device);
-        // gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_WIDTH_PLACEHOLDER"), std::to_string(IMG_WIDTH));
-        // gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_HEIGHT_PLACEHOLDER"), std::to_string(IMG_HEIGHT));
-        // std::cout << gstreamerStr << std::endl;
-        // this->cap = cv::VideoCapture(gstreamerStr, cv::CAP_GSTREAMER);
+        std::string gstreamerStr = "v4l2src device=DEVICE_PLACEHOLDER ! image/jpeg, width=IMAGE_WIDTH_PLACEHOLDER, height=IMAGE_HEIGHT_PLACEHOLDER, framerate=30/1 ! jpegdec ! videoconvert ! appsink";
+        std::string dev = "/dev/video" + device;
+        gstreamerStr = std::regex_replace(gstreamerStr, std::regex("DEVICE_PLACEHOLDER"), dev);
+        gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_WIDTH_PLACEHOLDER"), std::to_string(IMG_WIDTH));
+        gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_HEIGHT_PLACEHOLDER"), std::to_string(IMG_HEIGHT));
+        std::cout << gstreamerStr << std::endl;
+        this->cap = cv::VideoCapture(gstreamerStr, cv::CAP_GSTREAMER);
 
         int deviceIndex = std::stoi(device);
         this->deviceIndex = deviceIndex;
-        this->cap = cv::VideoCapture(deviceIndex);
+        // this->cap = cv::VideoCapture(deviceIndex);
 
         if (!cap.isOpened())
         {

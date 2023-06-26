@@ -37,14 +37,14 @@ namespace MultiUsbCamera
             return usbCamera[curCamPointer].getFrame(out);
         }
 
-        bool initialized()
+        int initialized()
         {
             // -- check if all cameras are initialized --
             for (int i = 0; i < NUM_CAM; i++)
                 if (!usbCamera[i].initialized())
-                    return false;
+                    return i;
 
-            return true;
+            return -1;
         }
 
     private:

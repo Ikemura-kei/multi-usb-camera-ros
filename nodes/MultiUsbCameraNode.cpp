@@ -12,16 +12,21 @@ int main(int ac, char **av)
 
     ros::NodeHandle nh("~");
 
-    MultiUsbCamera::MultiUsbCamera<NUM_CAM> multiCameraHandler(true); // we do skip the webcam, since the test was conducted on my laptop
-    if (!multiCameraHandler.initialized())
+    MultiUsbCamera::MultiUsbCamera<NUM_CAM> multiCameraHandler(false);
+    int initState = multiCameraHandler.initialized();
+    if (initState != -1)
     {
-        ROS_FATAL_STREAM("Camera initialization failed!");
+        ROS_FATAL_STREAM("Camera initialization failed at " << std::to_string(initState+1));
         return 1;
     }
+
+    cv::namedWindow("video", cv::WINDOW_NORMAL);
+    cv::setWindowProperty("video", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
 
     static ros::Rate rate(1000);
     static int curCamIdx = 0;
     static cv::Mat curFrame;
+    static cv::Mat showFrame;
     while (ros::ok())
     {
         rate.sleep();
@@ -29,7 +34,9 @@ int main(int ac, char **av)
         multiCameraHandler.setCameraPointer(curCamIdx);
         multiCameraHandler.getFrame(curFrame);
 
-        cv::imshow("video", curFrame);
+        cv::resize(curFrame, showFrame, cv::Size(800, 480));
+
+        cv::imshow("video", showFrame);
 
         char k = cv::waitKey(1);
         if (k == 'q')
