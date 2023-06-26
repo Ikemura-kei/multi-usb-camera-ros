@@ -32,11 +32,11 @@ namespace MultiUsbCamera
         gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_WIDTH_PLACEHOLDER"), std::to_string(IMG_WIDTH));
         gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_HEIGHT_PLACEHOLDER"), std::to_string(IMG_HEIGHT));
         std::cout << gstreamerStr << std::endl;
-        this->cap = cv::VideoCapture(gstreamerStr, cv::CAP_GSTREAMER);
+        // this->cap = cv::VideoCapture(gstreamerStr, cv::CAP_GSTREAMER);
 
         int deviceIndex = std::stoi(device);
         this->deviceIndex = deviceIndex;
-        // this->cap = cv::VideoCapture(deviceIndex);
+        this->cap = cv::VideoCapture(deviceIndex);
 
         if (!cap.isOpened())
         {
@@ -61,7 +61,7 @@ namespace MultiUsbCamera
     {
         cap >> out;
 
-        return true;
+        return !out.empty() && cap.isOpened();
     }
 
     bool UsbCamera::initialized()
