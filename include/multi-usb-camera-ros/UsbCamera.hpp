@@ -56,8 +56,8 @@ namespace MultiUsbCamera
         /**
          * @brief Checks if this camera has been initialized correctly.
          *
-         * @return true
-         * @return false
+         * @return true if the camera has been initialized correctly
+         * @return false otherwise
          */
         bool initialized();
 
