@@ -10,7 +10,7 @@ const cv::Size SCREEN_RESOLUTION(800, 480);
 static int curCamIdx = 0;
 static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg)
 {
-     curCamIdx = msg->camera_id % NUM_CAM;
+    curCamIdx = msg->camera_id % NUM_CAM;
 }
 
 int main(int ac, char **av)
@@ -35,14 +35,12 @@ int main(int ac, char **av)
     cv::setWindowProperty("video", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
 
     // -- static variables --
-    static ros::Rate rate(1000);
     static cv::Mat curFrame;
     static cv::Mat showFrame;
 
     // -- the main loop --
     while (ros::ok())
     {
-        rate.sleep();
         ros::spinOnce();
 
         multiCameraHandler.setCameraPointer(curCamIdx);
