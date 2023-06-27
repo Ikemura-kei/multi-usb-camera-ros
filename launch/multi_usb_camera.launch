@@ -2,6 +2,4 @@
 
 <node pkg="multi-usb-camera-ros" type="multi_usb_camera_node" name="multi_usb_camera_node" output="screen" />
 
-<node pkg="mcu_communication" type="mcu_communication_node" name="mcu_communication_node" />
-
 </launch>
