@@ -45,6 +45,7 @@ int main(int ac, char **av)
 
         multiCameraHandler.setCameraPointer(curCamIdx);
         multiCameraHandler.getFrame(curFrame);
+        cv::rotate(curFrame, curFrame, cv::ROTATE_180);
 
         cv::resize(curFrame, showFrame, SCREEN_RESOLUTION);
         cv::imshow("video", showFrame);
