@@ -1,3 +1,13 @@
+/**
+ * @file MultiUsbCameraNode.cpp
+ * @author IKEMURA, Kei (ikemurakei2001@gmial.com)
+ * @brief This file defines the node to show and switch different camera sources
+ * @version 0.1
+ * @date 2023-06-27
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include <ros/ros.h>
 
 #include <UsbCamera.hpp>
@@ -44,10 +54,14 @@ int main(int ac, char **av)
         ros::spinOnce();
 
         multiCameraHandler.setCameraPointer(curCamIdx);
-        multiCameraHandler.getFrame(curFrame);
+        bool success = multiCameraHandler.getFrame(curFrame);
         cv::rotate(curFrame, curFrame, cv::ROTATE_180);
 
-        cv::resize(curFrame, showFrame, SCREEN_RESOLUTION);
+        if (!success)
+            curFrame = cv::Mat::zeros(SCREEN_RESOLUTION, CV_8UC3);
+        else
+            cv::resize(curFrame, showFrame, SCREEN_RESOLUTION);
+            
         cv::imshow("video", showFrame);
 
         char k = cv::waitKey(1);
