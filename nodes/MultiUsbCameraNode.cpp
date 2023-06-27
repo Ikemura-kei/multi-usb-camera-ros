@@ -12,15 +12,13 @@
 
 #include <UsbCamera.hpp>
 #include <MultiUsbCamera.hpp>
+#include <Config.hpp>
 #include <robot_msgs/CameraCmd.h>
-
-const uint8_t NUM_CAM = 3;
-const cv::Size SCREEN_RESOLUTION(800, 480);
 
 static int curCamIdx = 0;
 static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg)
 {
-    curCamIdx = msg->camera_id % NUM_CAM;
+    curCamIdx = msg->camera_id % MultiUsbCamera::Config::NUM_CAM;
 }
 
 int main(int ac, char **av)
@@ -32,7 +30,7 @@ int main(int ac, char **av)
     ros::Subscriber camCmdSub = nh.subscribe<robot_msgs::CameraCmd>("/camera_cmd", 10, camCmdCb);
 
     // -- initialize and check if camera has started correctly --
-    MultiUsbCamera::MultiUsbCamera<NUM_CAM> multiCameraHandler(false);
+    MultiUsbCamera::MultiUsbCamera<MultiUsbCamera::Config::NUM_CAM> multiCameraHandler(false);
     int initState = multiCameraHandler.initialized(); // return -1 if ok, otherwise the index of the failed camera (0 starting)
     if (initState != -1)
     {
@@ -58,9 +56,9 @@ int main(int ac, char **av)
         cv::rotate(curFrame, curFrame, cv::ROTATE_180);
 
         if (!success)
-            curFrame = cv::Mat::zeros(SCREEN_RESOLUTION, CV_8UC3);
+            curFrame = cv::Mat::zeros(MultiUsbCamera::Config::SCREEN_RESOLUTION, CV_8UC3);
         else
-            cv::resize(curFrame, showFrame, SCREEN_RESOLUTION);
+            cv::resize(curFrame, showFrame, MultiUsbCamera::Config::SCREEN_RESOLUTION);
             
         cv::imshow("video", showFrame);
 
