@@ -1,3 +1,13 @@
+/**
+ * @file MultiThreadedMultiUsbCameraNode.cpp
+ * @author IKEMURA, Kei (ikemurakei2001@gmial.com)
+ * @brief The multi-threaded version of multi-camera video retrieval
+ * @version 0.1
+ * @date 2023-06-29
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #include <thread>
 #include <ros/ros.h>
 #include <Config.hpp>
@@ -6,8 +16,10 @@
 #include <chrono>
 #include <robot_msgs/CameraCmd.h>
 
+#define VERBOSE false
+
 // -- helper functions --
-static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg);
+static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg); // camera switching command from micro-controllers
 void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera);
 
 // -- globals --
@@ -17,7 +29,7 @@ static int curCamIdx = 0;
 int main(int ac, char **av)
 {
     ros::init(ac, av, "multi_threaded_multi_usb_camera_node");
-    ros::NodeHandle nh;
+    ros::NodeHandle nh("~");
     ros::Subscriber camCmdSub = nh.subscribe<robot_msgs::CameraCmd>("/camera_cmd", 10, camCmdCb);
 
     // -- get camera configurations --
@@ -67,15 +79,21 @@ int main(int ac, char **av)
 
 void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera)
 {
+#if VERBOSE
     auto lastTime = std::chrono::high_resolution_clock::now();
+#endif
     while (ros::ok())
     {
+#if VERBOSE
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - lastTime);
         lastTime = std::chrono::high_resolution_clock::now();
+#endif
 
         usbCamera->updateFrame();
 
+#if VERBOSE
         std::cout << usbCamera->getConfig().cameraName << ": " << duration.count() / 1000000.0 << std::endl;
+#endif
     }
 }
 

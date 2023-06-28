@@ -1,3 +1,13 @@
+/**
+ * @file GetUserConfig.hpp
+ * @author IKEMURA, Kei (ikemurakei2001@gmial.com)
+ * @brief Utility function to retrieve user configurations on the cameras from YAML file
+ * @version 0.1
+ * @date 2023-06-29
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #pragma once
 
 #include <UsbCamera.hpp>
