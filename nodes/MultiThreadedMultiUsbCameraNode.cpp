@@ -21,7 +21,12 @@ int main(int ac, char **av)
     ros::Subscriber camCmdSub = nh.subscribe<robot_msgs::CameraCmd>("/camera_cmd", 10, camCmdCb);
 
     // -- get camera configurations --
-    std::string pathToYaml = "/home/rm/engineer_2023_ws/config/multi_usb_camera.yaml";
+    std::string pathToYaml = "";
+    if (!nh.getParam("config_file", pathToYaml))
+    {
+        ROS_FATAL_STREAM("Camera configuration file missing!");
+        return 1;
+    }
     std::vector<MultiUsbCamera::CameraConfig> cameraConfigs = MultiUsbCamera::getCameraConfigs(pathToYaml);
     numCam = cameraConfigs.size();
 

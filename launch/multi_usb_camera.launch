@@ -1,5 +1,7 @@
 <launch>
 
-<node pkg="multi-usb-camera-ros" type="multi_usb_camera_node" name="multi_usb_camera_node" output="screen" />
+<node pkg="multi-usb-camera-ros" type="multi_usb_camera_node" name="multi_usb_camera_node" output="screen" >
+    <param name="config_file" value="$(find multi-usb-camera-ros)/config/multi_usb_camera.yaml"/>
+</node>
 
 </launch>
