@@ -17,7 +17,7 @@
 #include <GetUserConfig.hpp>
 #include <yaml-cpp/yaml.h>
 
-#define EVAL_PERFORMANCE true
+#define EVAL_PERFORMANCE false
 
 // -- globals --
 static int numCam = 0;
@@ -41,7 +41,7 @@ public:
     {
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        ROS_INFO_STREAM("[hbv1780]: Execution duration for " << procedureName << " took: " << duration.count() / 1000.0f << " ms.");
+        ROS_INFO_STREAM("[multi-usb-camera]: Execution duration for " << procedureName << " took: " << duration.count() / 1000.0f << " ms.");
     }
 
 private:

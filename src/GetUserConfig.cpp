@@ -1,5 +1,3 @@
-#pragma once
-
 #include <GetUserConfig.hpp>
 #include <yaml-cpp/yaml.h>
 

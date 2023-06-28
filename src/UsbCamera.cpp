@@ -42,6 +42,7 @@ namespace MultiUsbCamera
 
     UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig config, ros::NodeHandle &nh) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH), config(config)
     {
+        // -- construct the gstreamer configuration stream --
         std::string gstreamerStr = "v4l2src device=DEVICE_PLACEHOLDER ! image/jpeg, width=IMAGE_WIDTH_PLACEHOLDER, height=IMAGE_HEIGHT_PLACEHOLDER, framerate=30/1 ! jpegdec ! videoconvert ! appsink";
         std::string dev = "/dev/video" + this->config.deviceId;
         gstreamerStr = std::regex_replace(gstreamerStr, std::regex("DEVICE_PLACEHOLDER"), dev);
@@ -73,6 +74,7 @@ namespace MultiUsbCamera
         this->header.frame_id = config.frameId;
         this->header.seq = 0;
 
+        // published topic has a name of "/cameras/<camera_name>"
         this->imgPub = nh.advertise<sensor_msgs::Image>(std::string("/cameras/") + this->config.cameraName, 10);
     }
 
@@ -89,6 +91,7 @@ namespace MultiUsbCamera
             if (this->isActivated)
             {
                 // -- publish before any post processings --
+                out.copyTo(frame);
                 publish(); // internally checks if publishing is needed, so don't need to check outside
 
                 // -- post processings --
@@ -102,11 +105,16 @@ namespace MultiUsbCamera
 
     bool UsbCamera::getFrame(cv::Mat &out)
     {
+        if (frame.empty() || !cap.isOpened())
+            return false;
+
         frame.copyTo(out);
 
         // -- post processings --
         cv::resize(out, out, config.imageResizedSize);
         cv::putText(out, this->config.cameraName, cv::Point(20, 20), cv::FONT_ITALIC, 1.75, cv::Scalar(255, 255, 255), 3);
+
+        return true;
     }
 
     bool UsbCamera::initialized()

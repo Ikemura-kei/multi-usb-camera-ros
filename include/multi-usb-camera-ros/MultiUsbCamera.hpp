@@ -1,7 +1,8 @@
 /**
  * @file MultiUsbCamera.hpp
  * @author IKEMURA, Kei (ikemurakei2001@gmial.com)
- * @brief This file defines a multi-camera handler class for usb cameras
+ * @brief This file defines a multi-camera handler class for usb cameras. Note there is not multi-thread support, for example, 
+ *          if you want to update each camera in a separate frame that is not possible, for that, refer to the multi-thread node
  * @version 0.1
  * @date 2023-06-27
  *
@@ -80,10 +81,6 @@ namespace MultiUsbCamera
             }
 
             return LOG_OK;
-        }
-
-        void publish()
-        {
         }
 
     private:
