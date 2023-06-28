@@ -22,19 +22,19 @@ namespace MultiUsbCamera
             LOG_NO_CAMERA_SET = -2,
             LOG_OK = -1,
         };
-       /**
-        * @brief Construct a new multi-usb camera object
-        * 
-        * @param deviceIndexes the vector of device indexes, like {0, 1, 2, 3}..., corresponding to /dev/video0, /dev/video1, /dev/video2, and /dev/video3,
-        */
-        MultiUsbCamera(std::vector<CameraConfig> configurations)
+        /**
+         * @brief Construct a new multi-usb camera object
+         *
+         * @param deviceIndexes the vector of device indexes, like {0, 1, 2, 3}..., corresponding to /dev/video0, /dev/video1, /dev/video2, and /dev/video3,
+         */
+        MultiUsbCamera(std::vector<CameraConfig> configurations, ros::NodeHandle &nh)
         {
             this->numCam = configurations.size();
             if (this->numCam <= 0)
                 return;
 
             for (std::vector<CameraConfig>::iterator it = configurations.begin(); it != configurations.end(); it++)
-                usbCameras.push_back(UsbCamera(Config::SET_CAMERA_IMG_WIDTH, Config::SET_CAMERA_IMG_HEIGHT, *it));
+                usbCameras.push_back(UsbCamera(Config::SET_CAMERA_IMG_WIDTH, Config::SET_CAMERA_IMG_HEIGHT, *it, nh));
         }
         /**
          * @brief Set the current activated camera
@@ -44,6 +44,10 @@ namespace MultiUsbCamera
         void setCameraPointer(int idx)
         {
             curCamPointer = idx % this->numCam;
+
+            int cnt = 0;
+            for (auto it = usbCameras.begin(); it != usbCameras.end(); it++, cnt++)
+                it->setActivation(curCamPointer == cnt); // set only the selected camera as activated
         }
         /**
          * @brief Get the frame object
@@ -54,7 +58,7 @@ namespace MultiUsbCamera
          */
         bool getFrame(cv::Mat &out)
         {
-            return usbCameras[curCamPointer].getFrame(out); // note, as we use vector here, the index operation is bit slower, but the benefit is allowing dynamic #camera configuration.
+            return usbCameras[curCamPointer].getFrameAtOnce(out); // note, as we use vector here, the index operation is bit slower, but the benefit is allowing dynamic #camera configuration.
         }
         /**
          * @brief Checks if all the cameras are initialized correctly.
@@ -76,6 +80,10 @@ namespace MultiUsbCamera
             }
 
             return LOG_OK;
+        }
+
+        void publish()
+        {
         }
 
     private:

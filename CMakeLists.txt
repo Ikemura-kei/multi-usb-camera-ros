@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   robot_msgs
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
@@ -134,7 +135,9 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(multi_usb_camera_node nodes/MultiUsbCameraNode.cpp src/UsbCamera.cpp)
+add_executable(multi_usb_camera_node nodes/MultiUsbCameraNode.cpp src/UsbCamera.cpp src/GetUserConfig.cpp)
+
+add_executable(multi_threaded_multi_usb_camera_node nodes/MultiThreadedMultiUsbCameraNode.cpp src/UsbCamera.cpp src/GetUserConfig.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -148,6 +151,12 @@ add_executable(multi_usb_camera_node nodes/MultiUsbCameraNode.cpp src/UsbCamera.
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(multi_usb_camera_node
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
+)
+
+target_link_libraries(multi_threaded_multi_usb_camera_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   ${YAML_CPP_LIBRARIES}
