@@ -4,9 +4,9 @@
  * @brief Utility function to retrieve user configurations on the cameras from YAML file
  * @version 0.1
  * @date 2023-06-29
- * 
+ *
  * @copyright Copyright (c) 2023
- * 
+ *
  */
 #include <GetUserConfig.hpp>
 #include <yaml-cpp/yaml.h>
@@ -23,6 +23,8 @@ namespace MultiUsbCamera
             return cv::ROTATE_90_CLOCKWISE;
         else if (angle == -90)
             return cv::ROTATE_90_COUNTERCLOCKWISE;
+        else
+            return -1;
     }
 
     std::vector<CameraConfig> getCameraConfigs(const std::string &pathToYaml)
