@@ -15,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 find_package(OpenCV REQUIRED)
-
+find_package(yaml-cpp REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -150,6 +150,7 @@ add_executable(multi_usb_camera_node nodes/MultiUsbCameraNode.cpp src/UsbCamera.
 target_link_libraries(multi_usb_camera_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
 )
 
 #############

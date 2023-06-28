@@ -10,36 +10,31 @@
  */
 #pragma once
 #include <UsbCamera.hpp>
+#include <vector>
 
 namespace MultiUsbCamera
 {
-    template <int NUM_CAM>
     class MultiUsbCamera
     {
     public:
-        /**
-         * @brief Construct a new multi-usb camera object
-         *
-         * @param SKIP_WEBCAM whether to skip the embedded webcam (by default at /dev/video0), some computers do not have webcams, for those, set this parameters to false.
-         */
-        MultiUsbCamera(const bool SKIP_WEBCAM)
+        enum LogCode
         {
-            int initIndex = 0;
-            int endIndex = NUM_CAM;
+            LOG_NO_CAMERA_SET = -2,
+            LOG_OK = -1,
+        };
+       /**
+        * @brief Construct a new multi-usb camera object
+        * 
+        * @param deviceIndexes the vector of device indexes, like {0, 1, 2, 3}..., corresponding to /dev/video0, /dev/video1, /dev/video2, and /dev/video3,
+        */
+        MultiUsbCamera(std::vector<CameraConfig> configurations)
+        {
+            this->numCam = configurations.size();
+            if (this->numCam <= 0)
+                return;
 
-            // -- by default, some computers have integrated camera (webcam), so we skip it. --
-            if (SKIP_WEBCAM)
-            {
-                initIndex += 1;
-                endIndex += 1;
-            }
-
-            int camCounter = 0;
-            for (int i = initIndex; i < endIndex; i++)
-            {
-                usbCamera[camCounter] = UsbCamera(640, 480, std::to_string(i * 2));
-                camCounter += 1;
-            }
+            for (std::vector<CameraConfig>::iterator it = configurations.begin(); it != configurations.end(); it++)
+                usbCameras.push_back(UsbCamera(Config::SET_CAMERA_IMG_WIDTH, Config::SET_CAMERA_IMG_HEIGHT, *it));
         }
         /**
          * @brief Set the current activated camera
@@ -48,7 +43,7 @@ namespace MultiUsbCamera
          */
         void setCameraPointer(int idx)
         {
-            curCamPointer = idx % NUM_CAM;
+            curCamPointer = idx % this->numCam;
         }
         /**
          * @brief Get the frame object
@@ -59,7 +54,7 @@ namespace MultiUsbCamera
          */
         bool getFrame(cv::Mat &out)
         {
-            return usbCamera[curCamPointer].getFrame(out);
+            return usbCameras[curCamPointer].getFrame(out); // note, as we use vector here, the index operation is bit slower, but the benefit is allowing dynamic #camera configuration.
         }
         /**
          * @brief Checks if all the cameras are initialized correctly.
@@ -68,16 +63,24 @@ namespace MultiUsbCamera
          */
         int initialized()
         {
-            // -- check if all cameras are initialized --
-            for (int i = 0; i < NUM_CAM; i++)
-                if (!usbCamera[i].initialized())
-                    return i;
+            if (usbCameras.size() <= 0)
+                return LOG_NO_CAMERA_SET;
 
-            return -1;
+            // -- check if all cameras are initialized --
+            int idx = 0;
+            for (auto it = usbCameras.begin(); it != usbCameras.end(); it++)
+            {
+                if (!it->initialized())
+                    return idx;
+                idx++;
+            }
+
+            return LOG_OK;
         }
 
     private:
         int curCamPointer = 0; // the index to the currently activated camera.
-        UsbCamera usbCamera[NUM_CAM];
+        int numCam = 0;
+        std::vector<UsbCamera> usbCameras;
     };
 }

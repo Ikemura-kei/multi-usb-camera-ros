@@ -18,6 +18,7 @@ namespace MultiUsbCamera
 
     UsbCamera::UsbCamera() : IMG_WIDTH(640), IMG_HEIGHT(480)
     {
+        // default constructor, do not set any config
     }
 
     UsbCamera::UsbCamera(const UsbCamera &other) : IMG_HEIGHT(other.IMG_HEIGHT), IMG_WIDTH(other.IMG_WIDTH)
@@ -29,23 +30,22 @@ namespace MultiUsbCamera
     {
         this->isInitialized = other.isInitialized;
         this->cap = other.cap;
-        this->deviceIndex = other.deviceIndex;
+        this->config = other.config;
 
         return *this;
     }
 
-    UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, std::string device) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH)
+    UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig config) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH), config(config)
     {
         std::string gstreamerStr = "v4l2src device=DEVICE_PLACEHOLDER ! image/jpeg, width=IMAGE_WIDTH_PLACEHOLDER, height=IMAGE_HEIGHT_PLACEHOLDER, framerate=30/1 ! jpegdec ! videoconvert ! appsink";
-        std::string dev = "/dev/video" + device;
+        std::string dev = "/dev/video" + this->config.deviceId;
         gstreamerStr = std::regex_replace(gstreamerStr, std::regex("DEVICE_PLACEHOLDER"), dev);
         gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_WIDTH_PLACEHOLDER"), std::to_string(IMG_WIDTH));
         gstreamerStr = std::regex_replace(gstreamerStr, std::regex("IMAGE_HEIGHT_PLACEHOLDER"), std::to_string(IMG_HEIGHT));
         std::cout << gstreamerStr << std::endl;
         this->cap = cv::VideoCapture(gstreamerStr, cv::CAP_GSTREAMER);
 
-        int deviceIndex = std::stoi(device);
-        this->deviceIndex = deviceIndex;
+        int deviceIndex = std::stoi(this->config.deviceId);
         // this->cap = cv::VideoCapture(deviceIndex);
 
         if (!cap.isOpened())
@@ -70,8 +70,16 @@ namespace MultiUsbCamera
     bool UsbCamera::getFrame(cv::Mat &out)
     {
         cap >> out;
+        bool imValid = !out.empty() && cap.isOpened();
 
-        return !out.empty() && cap.isOpened();
+        if (imValid)
+        {
+            cv::resize(out, out, config.imageResizedSize);
+            if (config.cvRotateFlag != -1)
+                cv::rotate(out, out, config.cvRotateFlag);
+        }
+
+        return imValid;
     }
 
     bool UsbCamera::initialized()

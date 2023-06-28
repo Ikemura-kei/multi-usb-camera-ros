@@ -12,9 +12,17 @@
 
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <Config.hpp>
 
 namespace MultiUsbCamera
 {
+    struct CameraConfig
+    {
+        std::string cameraName = "bocchi";
+        std::string deviceId = "0";
+        int8_t cvRotateFlag = -1; // -1 refers to not rotating, tho not defined in OpenCV's rotate flags
+        cv::Size imageResizedSize = cv::Size(Config::SET_CAMERA_IMG_WIDTH, Config::SET_CAMERA_IMG_HEIGHT);
+    };
 
     class UsbCamera
     {
@@ -29,9 +37,9 @@ namespace MultiUsbCamera
          *
          * @param IMG_WIDTH the image height, set directly to the camera (that is, not by post-processing, the raw image will be of this size)
          * @param IMG_HEIGHT the image width, set directly to the camera (that is, not by post-processing, the raw image will be of this size)
-         * @param device the index after /dev/videox, (that is 'x')
+         * @param config the camera configuration object
          */
-        UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, std::string device);
+        UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig config);
         /**
          * @brief Copy constructor
          *
@@ -46,7 +54,7 @@ namespace MultiUsbCamera
          */
         UsbCamera &operator=(const UsbCamera &other);
         /**
-         * @brief Get the current frame
+         * @brief Get the current frame, with resize and rotation performed
          *
          * @param out the output argument to store the current frame
          * @return true if frame retrieval has succeeded.
@@ -64,8 +72,13 @@ namespace MultiUsbCamera
     private:
         const int IMG_WIDTH;
         const int IMG_HEIGHT;
-        int deviceIndex;
         cv::VideoCapture cap;
         bool isInitialized = false;
+        CameraConfig config;
     };
+}
+
+inline std::ostream &operator<<(std::ostream &os, MultiUsbCamera::CameraConfig const &cameraConfig)
+{
+    return os << "[Camera Name]: {" << cameraConfig.cameraName << "},\n[Camera Index]: {/dev/video" << cameraConfig.deviceId << "},\n[Image Resized Size]: {" << cameraConfig.imageResizedSize << "}\n[Camera Rotation Flag]: {" << std::to_string(cameraConfig.cvRotateFlag) << "}";
 }
