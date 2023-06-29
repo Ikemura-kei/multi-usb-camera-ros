@@ -15,6 +15,7 @@
 #include <Config.hpp>
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
+#include <mutex>
 
 namespace MultiUsbCamera
 {
@@ -116,6 +117,7 @@ namespace MultiUsbCamera
         std_msgs::Header header;
         cv::Mat frame;
         bool isActivated = false;
+        std::mutex frameMutex;
     };
 }
 /**

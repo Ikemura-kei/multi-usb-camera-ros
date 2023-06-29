@@ -65,6 +65,7 @@ int main(int ac, char **av)
         ros::spinOnce();
 
         bool success = cameras[curCamIdx].getFrame(curFrame);
+        // std::cout << curCamIdx << std::endl;
         if (!success)
             continue;
 

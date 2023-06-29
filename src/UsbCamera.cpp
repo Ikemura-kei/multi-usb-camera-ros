@@ -108,11 +108,13 @@ namespace MultiUsbCamera
         if (frame.empty() || !cap.isOpened())
             return false;
 
+        this->frameMutex.lock();
         frame.copyTo(out);
+        this->frameMutex.unlock();
 
         // -- post processings --
         cv::resize(out, out, config.imageResizedSize);
-        cv::putText(out, this->config.cameraName, cv::Point(20, 20), cv::FONT_ITALIC, 1.75, cv::Scalar(255, 255, 255), 3);
+        cv::putText(out, this->config.cameraName, cv::Point(50, 50), cv::FONT_ITALIC, 1.25, cv::Scalar(255, 255, 255), 3);
 
         return true;
     }
@@ -143,13 +145,18 @@ namespace MultiUsbCamera
 
     bool UsbCamera::updateFrame()
     {
-        cap >> frame;
-        bool imValid = !frame.empty() && cap.isOpened();
+        cv::Mat tmp;
+        cap >> tmp;
+        bool imValid = !tmp.empty() && cap.isOpened();
 
         if (imValid)
         {
             if (config.cvRotateFlag != -1)
-                cv::rotate(frame, frame, config.cvRotateFlag);
+                cv::rotate(tmp, tmp, config.cvRotateFlag);
+
+            this->frameMutex.lock();
+            tmp.copyTo(this->frame);
+            this->frameMutex.unlock();
 
             publish();
         }
