@@ -26,7 +26,8 @@ namespace MultiUsbCamera
     struct CameraConfig
     {
         std::string cameraName = "bocchi"; // custom identifier, will be printed to the presented image for identification
-        std::string deviceId = "0"; // the index before /dev/video, for example, for /dev/video2 this argument shall be "2"
+        std::string deviceId = "-1"; // the index before /dev/video, for example, for /dev/video2 this argument shall be "2"
+        std::string busId = "";
         int8_t cvRotateFlag = -1; // -1 refers to not rotating, tho not defined in OpenCV's rotate flags
         cv::Size imageResizedSize = cv::Size(Config::SET_CAMERA_IMG_WIDTH, Config::SET_CAMERA_IMG_HEIGHT);
         bool publishImage = false; // if publishing the image from this camera is needed
@@ -129,5 +130,5 @@ namespace MultiUsbCamera
  */
 inline std::ostream &operator<<(std::ostream &os, MultiUsbCamera::CameraConfig const &cameraConfig)
 {
-    return os << "[Camera Name]: {" << cameraConfig.cameraName << "},\n[Camera Index]: {/dev/video" << cameraConfig.deviceId << "},\n[Image Resized Size]: {" << cameraConfig.imageResizedSize << "}\n[Camera Rotation Flag]: {" << std::to_string(cameraConfig.cvRotateFlag) << "}\n[Frame ID]: {" << cameraConfig.frameId << "}\n[Publish Image]: {" << std::boolalpha << cameraConfig.publishImage << "}";
+    return os << "[Camera Name]: {" << cameraConfig.cameraName << "},\n[Camera Index]: {" << cameraConfig.deviceId << "},\n[Image Resized Size]: {" << cameraConfig.imageResizedSize << "}\n[Camera Rotation Flag]: {" << std::to_string(cameraConfig.cvRotateFlag) << "}\n[Frame ID]: {" << cameraConfig.frameId << "}\n[Publish Image]: {" << std::boolalpha << cameraConfig.publishImage << "}";
 }

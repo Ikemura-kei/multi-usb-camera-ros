@@ -43,14 +43,14 @@ namespace MultiUsbCamera
                 CameraConfig thisConfig;
                 thisConfig.cameraName = config[camParamName]["name"].as<std::string>();
                 thisConfig.cvRotateFlag = getCvRotateCode(config[camParamName]["rotate_angle"].as<int>());
-                thisConfig.deviceId = config[camParamName]["device_id"].as<std::string>();
+                thisConfig.busId = config[camParamName]["bus_id"].as<std::string>();
                 thisConfig.imageResizedSize.width = config[camParamName]["width"].as<int>();
                 thisConfig.imageResizedSize.height = config[camParamName]["height"].as<int>();
                 thisConfig.publishImage = config[camParamName]["publish_image"].as<bool>();
                 thisConfig.frameId = config[camParamName]["frame_id"].as<std::string>();
 
-                std::cout << thisConfig << std::endl
-                          << std::endl;
+                // std::cout << thisConfig << std::endl
+                //           << std::endl;
                 ret.push_back(thisConfig);
             }
         }

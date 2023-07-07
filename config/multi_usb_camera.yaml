@@ -1,18 +1,18 @@
 %YAML:1.0
 ---
 camera1:
-  name: "car_left"
-  rotate_angle: 0
-  device_id: 4
+  name: "exchange"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-3.2
   width: 800
   height: 480
   publish_image: true
-  frame_id: "car_left"
+  frame_id: "exchange"
 
 camera0:
   name: "backward_right"
   rotate_angle: 180
-  device_id: 2
+  bus_id: usb-0000:00:14.0-3.3
   width: 800
   height: 480
   publish_image: true
@@ -21,8 +21,17 @@ camera0:
 camera2:
   name: "backward_left"
   rotate_angle: 180
-  device_id: 0
+  bus_id: usb-0000:00:14.0-3.4
   width: 800
   height: 480
   publish_image: true
   frame_id: "backward_left"
+
+camera3:
+  name: "storage_left"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-3.1
+  width: 800
+  height: 480
+  publish_image: true
+  frame_id: "storage_left"

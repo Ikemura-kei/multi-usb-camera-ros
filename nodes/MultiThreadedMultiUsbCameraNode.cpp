@@ -15,8 +15,31 @@
 #include <GetUserConfig.hpp>
 #include <chrono>
 #include <robot_msgs/CameraCmd.h>
+#include <cstdio>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <array>
+#include <regex>
 
 #define VERBOSE false
+
+std::string exec(const char *cmd)
+{
+    std::array<char, 128> buffer;
+    std::string result;
+    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    if (!pipe)
+    {
+        throw std::runtime_error("popen() failed!");
+    }
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
+    {
+        result += buffer.data();
+    }
+    return result;
+}
 
 // -- helper functions --
 static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg); // camera switching command from micro-controllers
@@ -41,6 +64,47 @@ int main(int ac, char **av)
     }
     std::vector<MultiUsbCamera::CameraConfig> cameraConfigs = MultiUsbCamera::getCameraConfigs(pathToYaml);
     numCam = cameraConfigs.size();
+
+    // -- get the device indexes that correspond to each bus id --
+    std::string s = exec("v4l2-ctl --list-devices");
+    std::string delimiter = "\n";
+    size_t pos = 0;
+    int counter = 0;
+    std::string token;
+    while ((pos = s.find(delimiter)) != std::string::npos)
+    {
+        token = s.substr(0, pos);
+
+        if (counter % 4 == 0)
+        {
+            // -- this is the line containing bus id --
+            for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
+            {
+                if (it->deviceId != "-1")
+                    continue;
+
+                if (token.find(it->busId) != std::string::npos)
+                {
+                    size_t nextPos = s.find(delimiter, pos + 1);
+                    std::string id = s.substr(pos + 1, nextPos - pos - 1);
+                    it->deviceId = id.back();
+                    break;
+                }
+            }
+        }
+        s.erase(0, pos + delimiter.length());
+
+        counter += 1;
+    }
+
+    // -- print configurations for sanity checks --
+    for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
+    {
+        if (it->deviceId == "-1")
+            cameraConfigs.erase(it);
+        std::cout << *it << std::endl
+                  << std::endl;
+    }
 
     // -- initialize cameras --
     std::vector<MultiUsbCamera::UsbCamera> cameras;
