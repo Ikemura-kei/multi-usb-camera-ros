@@ -1,37 +1,55 @@
 %YAML:1.0
 ---
-camera1:
-  name: "exchange"
-  rotate_angle: 180
-  bus_id: usb-0000:00:14.0-3.2
-  width: 800
-  height: 480
-  publish_image: true
-  frame_id: "exchange"
-
 camera0:
   name: "backward_right"
-  rotate_angle: 180
-  bus_id: usb-0000:00:14.0-3.3
-  width: 800
-  height: 480
-  publish_image: true
-  frame_id: "backward_right"
-
-camera2:
-  name: "backward_left"
   rotate_angle: 180
   bus_id: usb-0000:00:14.0-3.4
   width: 800
   height: 480
   publish_image: true
-  frame_id: "backward_left"
+  frame_id: "backward_right"
 
-camera3:
-  name: "storage_left"
-  rotate_angle: 180
-  bus_id: usb-0000:00:14.0-3.1
-  width: 800
-  height: 480
-  publish_image: true
-  frame_id: "storage_left"
+# camera1:
+#   name: "exchange"
+#   rotate_angle: 180
+#   bus_id: usb-0000:00:14.0-3.2
+#   width: 800
+#   height: 480
+#   publish_image: true
+#   frame_id: "exchange"
+
+# camera2:
+#   name: "backward_left"
+#   rotate_angle: 180
+#   bus_id: usb-0000:00:14.0-3.4
+#   width: 800
+#   height: 480
+#   publish_image: true
+#   frame_id: "backward_left"
+
+# camera3:
+#   name: "storage_left"
+#   rotate_angle: 180
+#   bus_id: usb-0000:00:14.0-3.1
+#   width: 800
+#   height: 480
+#   publish_image: true
+#   frame_id: "storage_left"
+
+# camera4:
+#   name: "something"
+#   rotate_angle: 0
+#   bus_id: usb-0000:00:14.0-4.4
+#   width: 800
+#   height: 480
+#   publish_image: true
+#   frame_id: "something"
+
+# camera5:
+#   name: "something_else"
+#   rotate_angle: 0
+#   bus_id: usb-0000:00:14.0-4.3
+#   width: 800
+#   height: 480
+#   publish_image: true
+#   frame_id: "something_else"

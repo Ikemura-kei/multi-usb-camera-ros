@@ -75,23 +75,31 @@ int main(int ac, char **av)
     {
         token = s.substr(0, pos);
 
-        if (counter % 4 == 0)
+        // -- this is the line containing bus id --
+        for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
         {
-            // -- this is the line containing bus id --
-            for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
-            {
-                if (it->deviceId != "-1")
-                    continue;
+            if (it->deviceId != "-1")
+                continue;
 
-                if (token.find(it->busId) != std::string::npos)
+            if (token.find(it->busId) != std::string::npos)
+            {
+                size_t nextPos = s.find(delimiter, pos + 1);
+                std::string id = s.substr(pos + 1, nextPos - pos - 1);
+                it->deviceId = id.back();
+                std::cout << "last second: " << id[id.size() - 2] << std::endl;
+                if (id[id.size() - 2] != 'o')
                 {
-                    size_t nextPos = s.find(delimiter, pos + 1);
-                    std::string id = s.substr(pos + 1, nextPos - pos - 1);
-                    it->deviceId = id.back();
-                    break;
+                    char cp = id.back();
+                    std::string s;
+                    std::stringstream ss;
+                    ss << id[id.size() - 2] << cp;
+                    ss >> s;
+                    it->deviceId = s;
                 }
+                break;
             }
         }
+
         s.erase(0, pos + delimiter.length());
 
         counter += 1;
@@ -105,11 +113,14 @@ int main(int ac, char **av)
         std::cout << *it << std::endl
                   << std::endl;
     }
-
+    // return 1;
     // -- initialize cameras --
     std::vector<MultiUsbCamera::UsbCamera> cameras;
     for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
+    {
+        ros::Duration(0.5).sleep();
         cameras.push_back(MultiUsbCamera::UsbCamera(MultiUsbCamera::Config::SET_CAMERA_IMG_WIDTH, MultiUsbCamera::Config::SET_CAMERA_IMG_HEIGHT, *it, nh));
+    }
 
     // -- create a visualization window that covers the entire screen --
     cv::namedWindow("video", cv::WINDOW_NORMAL);
