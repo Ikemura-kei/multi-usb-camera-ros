@@ -86,7 +86,7 @@ int main(int ac, char **av)
                 size_t nextPos = s.find(delimiter, pos + 1);
                 std::string id = s.substr(pos + 1, nextPos - pos - 1);
                 it->deviceId = id.back();
-                std::cout << "last second: " << id[id.size() - 2] << std::endl;
+                // std::cout << "last second: " << id[id.size() - 2] << std::endl;
                 if (id[id.size() - 2] != 'o')
                 {
                     char cp = id.back();
@@ -109,11 +109,17 @@ int main(int ac, char **av)
     for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
     {
         if (it->deviceId == "-1")
-            cameraConfigs.erase(it);
+        {
+            ROS_WARN_STREAM("--> Camera for {" << it->busId << "} was not found!!!");
+            // cameraConfigs.erase(it);
+        }
+        else{
+            ROS_INFO_STREAM("--> Camera for {" << it->busId << "} was found successfully :)");
+        }
         std::cout << *it << std::endl
                   << std::endl;
     }
-    // return 1;
+
     // -- initialize cameras --
     std::vector<MultiUsbCamera::UsbCamera> cameras;
     for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)

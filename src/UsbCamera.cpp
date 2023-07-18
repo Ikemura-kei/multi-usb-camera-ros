@@ -22,6 +22,7 @@ namespace MultiUsbCamera
     UsbCamera::UsbCamera() : IMG_WIDTH(640), IMG_HEIGHT(480)
     {
         // default constructor, do not set any config
+        initFrameSubstitution();
     }
 
     UsbCamera::UsbCamera(const UsbCamera &other) : IMG_HEIGHT(other.IMG_HEIGHT), IMG_WIDTH(other.IMG_WIDTH)
@@ -37,10 +38,12 @@ namespace MultiUsbCamera
         this->header = other.header;
         this->imgPub = other.imgPub;
 
+        initFrameSubstitution();
+
         return *this;
     }
 
-    UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig config, ros::NodeHandle &nh) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH), config(config)
+    bool UsbCamera::initCamera()
     {
         // -- construct the gstreamer configuration stream --
         std::string gstreamerStr = "v4l2src device=DEVICE_PLACEHOLDER ! image/jpeg, width=IMAGE_WIDTH_PLACEHOLDER, height=IMAGE_HEIGHT_PLACEHOLDER, framerate=30/1 ! jpegdec ! videoconvert ! appsink";
@@ -51,13 +54,9 @@ namespace MultiUsbCamera
         std::cout << gstreamerStr << std::endl;
         this->cap = cv::VideoCapture(gstreamerStr, cv::CAP_GSTREAMER);
 
-        int deviceIndex = std::stoi(this->config.deviceId);
-        // this->cap = cv::VideoCapture(deviceIndex);
-
         if (!cap.isOpened())
         {
-            this->isInitialized = false;
-            return;
+            return false;
         }
 
         // -- test read --
@@ -66,37 +65,77 @@ namespace MultiUsbCamera
 
         if (testFrame.empty())
         {
-            this->isInitialized = false;
-            return;
+            return false;
         }
 
-        this->isInitialized = true;
+        return true;
+    }
+
+    UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig config, ros::NodeHandle &nh) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH), config(config)
+    {
+        this->lastReconnectionTime = ros::Time::now();
+
+        // int deviceIndex = std::stoi(this->config.deviceId);
+        // this->cap = cv::VideoCapture(deviceIndex);
+
+        this->isInitialized = initCamera();
         this->header.frame_id = config.frameId;
         this->header.seq = 0;
 
         // published topic has a name of "/cameras/<camera_name>"
         this->imgPub = nh.advertise<sensor_msgs::Image>(std::string("/cameras/") + this->config.cameraName, 10);
+
+        initFrameSubstitution();
+    }
+
+    void UsbCamera::initFrameSubstitution()
+    {
+        this->noFrameSubstitution = cv::Mat::zeros(cv::Size(this->IMG_WIDTH, this->IMG_HEIGHT), CV_8UC1);
+        cv::putText(this->noFrameSubstitution, "No Frame Retreived!!! Camera Disconnected.", cv::Point(((int)(this->IMG_WIDTH / 2), (int)(this->IMG_HEIGHT / 2))), cv::FONT_ITALIC, 1.5, 255, 2);
     }
 
     bool UsbCamera::getFrameAtOnce(cv::Mat &out)
     {
-        cap >> out;
-        bool imValid = !out.empty() && cap.isOpened();
-
-        if (imValid)
+        bool imValid = false;
+        if (this->isInitialized)
         {
-            if (config.cvRotateFlag != -1)
-                cv::rotate(out, out, config.cvRotateFlag);
+            cap >> out;
+            imValid = !out.empty() && cap.isOpened();
 
-            if (this->isActivated)
+            if (imValid)
             {
-                // -- publish before any post processings --
-                out.copyTo(frame);
-                publish(); // internally checks if publishing is needed, so don't need to check outside
+                if (config.cvRotateFlag != -1)
+                    cv::rotate(out, out, config.cvRotateFlag);
 
-                // -- post processings --
-                cv::resize(out, out, config.imageResizedSize);
-                cv::putText(out, this->config.cameraName, cv::Point(20, 20), cv::FONT_ITALIC, 1.75, cv::Scalar(255, 255, 255), 3);
+                if (this->isActivated)
+                {
+                    // -- publish before any post processings --
+                    out.copyTo(frame);
+                    publish(); // internally checks if publishing is needed, so don't need to check outside
+
+                    // -- post processings --
+                    cv::resize(out, out, config.imageResizedSize);
+                    cv::putText(out, this->config.cameraName, cv::Point(20, 20), cv::FONT_ITALIC, 1.75, cv::Scalar(255, 255, 255), 3);
+                }
+            }
+        }
+        else
+        {
+            this->isInitialized = false;
+            if ((ros::Time::now() - this->lastReconnectionTime).toSec() >= this->RECONNECTION_PERIOD)
+            {
+                this->lastReconnectionTime = ros::Time::now();
+
+                this->isInitialized = initCamera();
+
+                if (this->isInitialized)
+                {
+                    ROS_INFO_STREAM("--> Camera reconnected!!! Id is: {" << config.cameraName << "}");
+                }
+                else
+                {
+                    ROS_WARN_STREAM("--> Reconnection failed!!! Id is {" << config.cameraName << "}");
+                }
             }
         }
 
@@ -105,8 +144,13 @@ namespace MultiUsbCamera
 
     bool UsbCamera::getFrame(cv::Mat &out)
     {
-        if (frame.empty() || !cap.isOpened())
+        if (frame.empty() || !cap.isOpened() || !this->isInitialized)
+        {
+            this->noFrameSubstitution.copyTo(out);
+            cv::resize(out, out, config.imageResizedSize);
+            cv::putText(out, this->config.cameraName, cv::Point(50, 50), cv::FONT_ITALIC, 1.25, cv::Scalar(255, 255, 255), 3);
             return false;
+        }
 
         this->frameMutex.lock();
         frame.copyTo(out);
@@ -147,7 +191,9 @@ namespace MultiUsbCamera
     {
         cv::Mat tmp;
         cap >> tmp;
-        bool imValid = !tmp.empty() && cap.isOpened();
+        bool imValid = !tmp.empty() && cap.isOpened() && this->isInitialized;
+
+        // ROS_INFO_STREAM("--> Image valid is " << (imValid ? "YES" : "NO"));
 
         if (imValid)
         {
@@ -159,6 +205,25 @@ namespace MultiUsbCamera
             this->frameMutex.unlock();
 
             publish();
+        }
+        else
+        {
+            this->isInitialized = false;
+            if ((ros::Time::now() - this->lastReconnectionTime).toSec() >= this->RECONNECTION_PERIOD)
+            {
+                this->lastReconnectionTime = ros::Time::now();
+
+                this->isInitialized = initCamera();
+
+                if (this->isInitialized)
+                {
+                    ROS_INFO_STREAM("--> Camera reconnected!!! Id is: {" << config.cameraName << "}");
+                }
+                else
+                {
+                    ROS_WARN_STREAM("--> Reconnection failed!!! Id is {" << config.cameraName << "}");
+                }
+            }
         }
 
         return imValid;

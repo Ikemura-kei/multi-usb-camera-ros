@@ -1,55 +1,67 @@
 %YAML:1.0
 ---
-camera0:
-  name: "backward_right"
-  rotate_angle: 180
-  bus_id: usb-0000:00:14.0-3.4
-  width: 800
-  height: 480
-  publish_image: true
-  frame_id: "backward_right"
-
-# camera1:
-#   name: "exchange"
-#   rotate_angle: 180
-#   bus_id: usb-0000:00:14.0-3.2
-#   width: 800
-#   height: 480
-#   publish_image: true
-#   frame_id: "exchange"
-
-# camera2:
+# camera0:
 #   name: "backward_left"
 #   rotate_angle: 180
 #   bus_id: usb-0000:00:14.0-3.4
 #   width: 800
 #   height: 480
-#   publish_image: true
+#   raw_width: 1280
+#   raw_height: 720
+#   publish_image: false
 #   frame_id: "backward_left"
 
+# camera1:
+#   name: "backward_right"
+#   rotate_angle: 180
+#   bus_id: usb-0000:00:14.0-4.3
+#   width: 800
+#   height: 480
+#   raw_width: 1280
+#   raw_height: 720
+#   publish_image: false
+#   frame_id: "backward_right"
+
+# camera2:
+#   name: "right"
+#   rotate_angle: 180
+#   bus_id: usb-0000:00:14.0-4.4
+#   width: 800
+#   height: 480
+#   raw_width: 1280
+#   raw_height: 720
+#   publish_image: false
+#   frame_id: "right"
+
 # camera3:
-#   name: "storage_left"
+#   name: "undefined_1"
 #   rotate_angle: 180
 #   bus_id: usb-0000:00:14.0-3.1
 #   width: 800
 #   height: 480
+#   raw_width: 1920
+#   raw_height: 1080
 #   publish_image: true
-#   frame_id: "storage_left"
+#   frame_id: "undefined_1"
 
-# camera4:
-#   name: "something"
-#   rotate_angle: 0
-#   bus_id: usb-0000:00:14.0-4.4
-#   width: 800
-#   height: 480
-#   publish_image: true
-#   frame_id: "something"
+camera4:
+  name: "undefined_2"
+  rotate_angle: 0
+  bus_id: usb-0000:00:14.0-3.2
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: true
+  frame_id: "undefined_2"
 
 # camera5:
-#   name: "something_else"
+#   name: "dummy"
 #   rotate_angle: 0
-#   bus_id: usb-0000:00:14.0-4.3
+#   bus_id: usb-0000:00:14.0-4.8
 #   width: 800
 #   height: 480
-#   publish_image: true
-#   frame_id: "something_else"
+#   raw_width: 1920
+#   raw_height: 1080
+#   publish_image: false
+#   frame_id: "dummy"

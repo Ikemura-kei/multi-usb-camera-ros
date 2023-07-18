@@ -48,6 +48,8 @@ namespace MultiUsbCamera
                 thisConfig.imageResizedSize.height = config[camParamName]["height"].as<int>();
                 thisConfig.publishImage = config[camParamName]["publish_image"].as<bool>();
                 thisConfig.frameId = config[camParamName]["frame_id"].as<std::string>();
+                thisConfig.rawWidth = config[camParamName]["raw_width"].as<int>();
+                thisConfig.rawHeight = config[camParamName]["raw_height"].as<int>();
 
                 // std::cout << thisConfig << std::endl
                 //           << std::endl;

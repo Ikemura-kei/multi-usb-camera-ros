@@ -21,17 +21,19 @@ namespace MultiUsbCamera
 {
     /**
      * @brief the configuration structure for the camera
-     * 
+     *
      */
     struct CameraConfig
     {
         std::string cameraName = "bocchi"; // custom identifier, will be printed to the presented image for identification
-        std::string deviceId = "-1"; // the index before /dev/video, for example, for /dev/video2 this argument shall be "2"
+        std::string deviceId = "-1";       // the index before /dev/video, for example, for /dev/video2 this argument shall be "2"
         std::string busId = "";
         int8_t cvRotateFlag = -1; // -1 refers to not rotating, tho not defined in OpenCV's rotate flags
         cv::Size imageResizedSize = cv::Size(Config::SET_CAMERA_IMG_WIDTH, Config::SET_CAMERA_IMG_HEIGHT);
         bool publishImage = false; // if publishing the image from this camera is needed
-        std::string frameId = ""; // the frame id associated with the published image
+        std::string frameId = "";  // the frame id associated with the published image
+        int rawWidth = 0;
+        int rawHeight = 0;
     };
 
     class UsbCamera
@@ -109,16 +111,23 @@ namespace MultiUsbCamera
     private:
         void publish();
         void cvImgToImageMsg(cv::Mat img, sensor_msgs::Image &msg);
+        void initFrameSubstitution();
+        bool initCamera();
+
         const int IMG_WIDTH;
         const int IMG_HEIGHT;
+        const float RECONNECTION_PERIOD = 3.0;
+
         cv::VideoCapture cap;
         bool isInitialized = false;
         CameraConfig config;
         ros::Publisher imgPub;
         std_msgs::Header header;
         cv::Mat frame;
+        cv::Mat noFrameSubstitution; // used when no frame received, should show a text explaining no frame has been received.
         bool isActivated = false;
         std::mutex frameMutex;
+        ros::Time lastReconnectionTime;
     };
 }
 /**
@@ -130,5 +139,5 @@ namespace MultiUsbCamera
  */
 inline std::ostream &operator<<(std::ostream &os, MultiUsbCamera::CameraConfig const &cameraConfig)
 {
-    return os << "[Camera Name]: {" << cameraConfig.cameraName << "},\n[Camera Index]: {" << cameraConfig.deviceId << "},\n[Image Resized Size]: {" << cameraConfig.imageResizedSize << "}\n[Camera Rotation Flag]: {" << std::to_string(cameraConfig.cvRotateFlag) << "}\n[Frame ID]: {" << cameraConfig.frameId << "}\n[Publish Image]: {" << std::boolalpha << cameraConfig.publishImage << "}";
+    return os << "[Camera Name]: {" << cameraConfig.cameraName << "},\n[Camera Index]: {" << cameraConfig.deviceId << "},\n[Image Resized Size]: {" << cameraConfig.imageResizedSize << "}\n[Camera Rotation Flag]: {" << std::to_string(cameraConfig.cvRotateFlag) << "}\n[Frame ID]: {" << cameraConfig.frameId << "}\n[Publish Image]: {" << std::boolalpha << cameraConfig.publishImage << "}\n[Raw Width]: {" << cameraConfig.rawWidth << "}\n[Raw Height]: {" << cameraConfig.rawHeight << "}";
 }
