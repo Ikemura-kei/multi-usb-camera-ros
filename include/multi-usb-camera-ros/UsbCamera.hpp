@@ -51,7 +51,7 @@ namespace MultiUsbCamera
          * @param IMG_HEIGHT the image width, set directly to the camera (that is, not by post-processing, the raw image will be of this size)
          * @param config the camera configuration object
          */
-        UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig config, ros::NodeHandle &nh);
+        UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig &config, ros::NodeHandle &nh);
         /**
          * @brief Copy constructor
          *
@@ -108,6 +108,8 @@ namespace MultiUsbCamera
          */
         CameraConfig getConfig() { return config; }
 
+        void updateCameraId(std::string newId);
+
     private:
         void publish();
         void cvImgToImageMsg(cv::Mat img, sensor_msgs::Image &msg);
@@ -116,7 +118,7 @@ namespace MultiUsbCamera
 
         const int IMG_WIDTH;
         const int IMG_HEIGHT;
-        const float RECONNECTION_PERIOD = 3.0;
+        const float RECONNECTION_PERIOD = 4.0;
 
         cv::VideoCapture cap;
         bool isInitialized = false;

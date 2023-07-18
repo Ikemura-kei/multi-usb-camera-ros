@@ -137,7 +137,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(multi_usb_camera_node nodes/MultiUsbCameraNode.cpp src/UsbCamera.cpp src/GetUserConfig.cpp)
 
-add_executable(multi_threaded_multi_usb_camera_node nodes/MultiThreadedMultiUsbCameraNode.cpp src/UsbCamera.cpp src/GetUserConfig.cpp)
+add_executable(multi_threaded_multi_usb_camera_node nodes/MultiThreadedMultiUsbCameraNode.cpp src/UsbCamera.cpp src/GetUserConfig.cpp src/GetCameraIdByBusId.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

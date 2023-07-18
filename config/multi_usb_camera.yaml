@@ -11,16 +11,16 @@
 #   publish_image: false
 #   frame_id: "backward_left"
 
-# camera1:
-#   name: "backward_right"
-#   rotate_angle: 180
-#   bus_id: usb-0000:00:14.0-4.3
-#   width: 800
-#   height: 480
-#   raw_width: 1280
-#   raw_height: 720
-#   publish_image: false
-#   frame_id: "backward_right"
+camera1:
+  name: "backward_right"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-4.3
+  width: 800
+  height: 480
+  raw_width: 1280
+  raw_height: 720
+  publish_image: false
+  frame_id: "backward_right"
 
 # camera2:
 #   name: "right"
@@ -44,16 +44,16 @@
 #   publish_image: true
 #   frame_id: "undefined_1"
 
-camera4:
-  name: "undefined_2"
-  rotate_angle: 0
-  bus_id: usb-0000:00:14.0-3.2
-  width: 800
-  height: 480
-  raw_width: 1920
-  raw_height: 1080
-  publish_image: true
-  frame_id: "undefined_2"
+# camera4:
+#   name: "undefined_2"
+#   rotate_angle: 0
+#   bus_id: usb-0000:00:14.0-3.2
+#   width: 800
+#   height: 480
+#   raw_width: 1920
+#   raw_height: 1080
+#   publish_image: true
+#   frame_id: "undefined_2"
 
 # camera5:
 #   name: "dummy"

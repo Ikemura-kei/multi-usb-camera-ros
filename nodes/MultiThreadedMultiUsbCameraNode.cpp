@@ -13,8 +13,9 @@
 #include <Config.hpp>
 #include <UsbCamera.hpp>
 #include <GetUserConfig.hpp>
-#include <chrono>
 #include <robot_msgs/CameraCmd.h>
+#include <GetCameraIdByBusId.hpp>
+#include <chrono>
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -25,22 +26,6 @@
 
 #define VERBOSE false
 
-std::string exec(const char *cmd)
-{
-    std::array<char, 128> buffer;
-    std::string result;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-    if (!pipe)
-    {
-        throw std::runtime_error("popen() failed!");
-    }
-    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr)
-    {
-        result += buffer.data();
-    }
-    return result;
-}
-
 // -- helper functions --
 static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg); // camera switching command from micro-controllers
 void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera);
@@ -48,6 +33,9 @@ void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera);
 // -- globals --
 static int numCam = 0;
 static int curCamIdx = 0;
+static bool allCameraInitialized = false;
+static ros::Time lastReconnectionAttemptTime;
+static const float RECONNECTION_ATTEMPT_PERIOD = 2.0; // seconds
 
 int main(int ac, char **av)
 {
@@ -66,62 +54,11 @@ int main(int ac, char **av)
     numCam = cameraConfigs.size();
 
     // -- get the device indexes that correspond to each bus id --
-    std::string s = exec("v4l2-ctl --list-devices");
-    std::string delimiter = "\n";
-    size_t pos = 0;
-    int counter = 0;
-    std::string token;
-    while ((pos = s.find(delimiter)) != std::string::npos)
-    {
-        token = s.substr(0, pos);
-
-        // -- this is the line containing bus id --
-        for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
-        {
-            if (it->deviceId != "-1")
-                continue;
-
-            if (token.find(it->busId) != std::string::npos)
-            {
-                size_t nextPos = s.find(delimiter, pos + 1);
-                std::string id = s.substr(pos + 1, nextPos - pos - 1);
-                it->deviceId = id.back();
-                // std::cout << "last second: " << id[id.size() - 2] << std::endl;
-                if (id[id.size() - 2] != 'o')
-                {
-                    char cp = id.back();
-                    std::string s;
-                    std::stringstream ss;
-                    ss << id[id.size() - 2] << cp;
-                    ss >> s;
-                    it->deviceId = s;
-                }
-                break;
-            }
-        }
-
-        s.erase(0, pos + delimiter.length());
-
-        counter += 1;
-    }
-
-    // -- print configurations for sanity checks --
-    for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
-    {
-        if (it->deviceId == "-1")
-        {
-            ROS_WARN_STREAM("--> Camera for {" << it->busId << "} was not found!!!");
-            // cameraConfigs.erase(it);
-        }
-        else{
-            ROS_INFO_STREAM("--> Camera for {" << it->busId << "} was found successfully :)");
-        }
-        std::cout << *it << std::endl
-                  << std::endl;
-    }
+    std::vector<MultiUsbCamera::UsbCamera> cameras;
+    allCameraInitialized = MultiUsbCamera::getCameraIdByBusId(cameraConfigs, cameras, false);
+    lastReconnectionAttemptTime = ros::Time::now();
 
     // -- initialize cameras --
-    std::vector<MultiUsbCamera::UsbCamera> cameras;
     for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
     {
         ros::Duration(0.5).sleep();
@@ -144,9 +81,26 @@ int main(int ac, char **av)
     while (ros::ok())
     {
         ros::spinOnce();
+        
+        // -- if this is true, some cameras were not found at initialization time, so we keep finding them with a fixed period --
+        if (!allCameraInitialized && (ros::Time::now() - lastReconnectionAttemptTime).toSec() >= RECONNECTION_ATTEMPT_PERIOD)
+        {
+            lastReconnectionAttemptTime = ros::Time::now();
+            allCameraInitialized = MultiUsbCamera::getCameraIdByBusId(cameraConfigs, cameras, true);
+            if (!allCameraInitialized)
+            {
+                for (auto c : cameraConfigs)
+                {
+                    if (c.deviceId == "-1")
+                    {
+                        ROS_WARN_STREAM("--> Reconnection failed, camera " << c.cameraName << " is still not connected");
+                    }
+                }
+            }
+        }
 
+        // -- retreive the current frame of the currently selected camera --
         bool success = cameras[curCamIdx].getFrame(curFrame);
-        // std::cout << curCamIdx << std::endl;
         if (!success)
             continue;
 

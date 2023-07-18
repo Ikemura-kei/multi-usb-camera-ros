@@ -45,6 +45,11 @@ namespace MultiUsbCamera
 
     bool UsbCamera::initCamera()
     {
+        if (this->config.deviceId == "-1")
+        {
+            return false; // the associated device id was not found yet, no way we can initialize camera
+        }
+
         // -- construct the gstreamer configuration stream --
         std::string gstreamerStr = "v4l2src device=DEVICE_PLACEHOLDER ! image/jpeg, width=IMAGE_WIDTH_PLACEHOLDER, height=IMAGE_HEIGHT_PLACEHOLDER, framerate=30/1 ! jpegdec ! videoconvert ! appsink";
         std::string dev = "/dev/video" + this->config.deviceId;
@@ -71,7 +76,7 @@ namespace MultiUsbCamera
         return true;
     }
 
-    UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig config, ros::NodeHandle &nh) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH), config(config)
+    UsbCamera::UsbCamera(const int IMG_WIDTH, const int IMG_HEIGHT, CameraConfig &config, ros::NodeHandle &nh) : IMG_HEIGHT(IMG_HEIGHT), IMG_WIDTH(IMG_WIDTH), config(config)
     {
         this->lastReconnectionTime = ros::Time::now();
 
@@ -92,6 +97,11 @@ namespace MultiUsbCamera
     {
         this->noFrameSubstitution = cv::Mat::zeros(cv::Size(this->IMG_WIDTH, this->IMG_HEIGHT), CV_8UC1);
         cv::putText(this->noFrameSubstitution, "No Frame Retreived!!! Camera Disconnected.", cv::Point(((int)(this->IMG_WIDTH / 2), (int)(this->IMG_HEIGHT / 2))), cv::FONT_ITALIC, 1.5, 255, 2);
+    }
+
+    void UsbCamera::updateCameraId(std::string newId)
+    {
+        this->config.deviceId = newId;
     }
 
     bool UsbCamera::getFrameAtOnce(cv::Mat &out)
