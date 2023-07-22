@@ -37,7 +37,7 @@ static int numCam = 0;
 static int curCamIdx = 0;
 static bool allCameraInitialized = false;
 static ros::Time lastReconnectionAttemptTime;
-static const float RECONNECTION_ATTEMPT_PERIOD = 2.0; // seconds
+static const float RECONNECTION_ATTEMPT_PERIOD = 1.75; // seconds
 
 int main(int ac, char **av)
 {

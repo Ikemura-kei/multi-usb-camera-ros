@@ -119,7 +119,7 @@ namespace MultiUsbCamera
 
         const int IMG_WIDTH;
         const int IMG_HEIGHT;
-        const float RECONNECTION_PERIOD = 4.0;
+        const float RECONNECTION_PERIOD = 2.114514;
 
         cv::VideoCapture cap;
         bool isInitialized = false;
