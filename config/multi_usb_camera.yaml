@@ -1,67 +1,133 @@
 %YAML:1.0
 ---
-# camera0:
-#   name: "backward_left"
-#   rotate_angle: 180
-#   bus_id: usb-0000:00:14.0-3.4
-#   width: 800
-#   height: 480
-#   raw_width: 1280
-#   raw_height: 720
-#   publish_image: false
-#   frame_id: "backward_left"
-
-camera1:
-  name: "backward_right"
+camera0:
+  name: "backward_left"
   rotate_angle: 180
-  bus_id: usb-0000:00:14.0-4.3
+  bus_id: usb-0000:00:14.0-3.4
   width: 800
   height: 480
   raw_width: 1280
   raw_height: 720
   publish_image: false
+  frame_id: "backward_left"
+
+camera1:
+  name: "backward_right"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-2.2
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
   frame_id: "backward_right"
 
-# camera2:
-#   name: "right"
-#   rotate_angle: 180
-#   bus_id: usb-0000:00:14.0-4.4
-#   width: 800
-#   height: 480
-#   raw_width: 1280
-#   raw_height: 720
-#   publish_image: false
-#   frame_id: "right"
+camera2:
+  name: "left"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-3.1
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "left"
 
-# camera3:
-#   name: "undefined_1"
-#   rotate_angle: 180
-#   bus_id: usb-0000:00:14.0-3.1
-#   width: 800
-#   height: 480
-#   raw_width: 1920
-#   raw_height: 1080
-#   publish_image: true
-#   frame_id: "undefined_1"
+camera3:
+  name: "right"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-2.3
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "right"
 
-# camera4:
-#   name: "undefined_2"
-#   rotate_angle: 0
-#   bus_id: usb-0000:00:14.0-3.2
-#   width: 800
-#   height: 480
-#   raw_width: 1920
-#   raw_height: 1080
-#   publish_image: true
-#   frame_id: "undefined_2"
+camera4:
+  name: "storage_left"
+  rotate_angle: 0
+  bus_id: usb-0000:00:14.0-3.3
+  width: 800
+  height: 480
+  raw_width: 1280
+  raw_height: 720
+  publish_image: false
+  frame_id: "storage_left"
 
-# camera5:
-#   name: "dummy"
-#   rotate_angle: 0
-#   bus_id: usb-0000:00:14.0-4.8
-#   width: 800
-#   height: 480
-#   raw_width: 1920
-#   raw_height: 1080
-#   publish_image: false
-#   frame_id: "dummy"
+camera5:
+  name: "storage_right"
+  rotate_angle: 0
+  bus_id: usb-0000:00:14.0-2.1
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "storage_right"
+
+camera6:
+  name: "exchange_left"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-3.2
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "exchange_left"
+
+camera7:
+  name: "exchange_right"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-2.4
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "exchange_right"
+
+camera8:
+  name: "second_pitch"
+  rotate_angle: 180
+  bus_id: usb-0000:00:14.0-4.2
+  width: 800
+  height: 480
+  raw_width: 1280
+  raw_height: 720
+  publish_image: false
+  frame_id: "second_pitch"
+
+camera9:
+  name: "arm"
+  rotate_angle: 0
+  bus_id: usb-0000:00:14.0-4.1
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "arm"
+
+camera10:
+  name: "camera_states"
+  rotate_angle: 0
+  bus_id: extra
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "camera_states"
+
+camera11:
+  name: "arm_state"
+  rotate_angle: 0
+  bus_id: extra
+  width: 800
+  height: 480
+  raw_width: 1920
+  raw_height: 1080
+  publish_image: false
+  frame_id: "arm_state"

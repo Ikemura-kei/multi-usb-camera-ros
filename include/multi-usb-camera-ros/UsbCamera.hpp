@@ -110,6 +110,7 @@ namespace MultiUsbCamera
 
         void updateCameraId(std::string newId);
 
+        bool isCameraOK = false;
     private:
         void publish();
         void cvImgToImageMsg(cv::Mat img, sensor_msgs::Image &msg);
@@ -130,6 +131,9 @@ namespace MultiUsbCamera
         bool isActivated = false;
         std::mutex frameMutex;
         ros::Time lastReconnectionTime;
+        ros::Time lastFrameTime;
+        int reconnectionCounter = 0;
+        cv::Mat wholeBlack;
     };
 }
 /**

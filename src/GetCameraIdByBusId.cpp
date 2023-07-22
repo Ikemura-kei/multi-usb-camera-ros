@@ -51,7 +51,7 @@ namespace MultiUsbCamera
             int camIdx = 0;
             for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++, camIdx++)
             {
-                if (it->deviceId != "-1") // we mark uninitialized ids to be -1, not being equal to -1 means the camera has already been associated to a propare camera index
+                if (it->deviceId != "-1" || it->busId == "extra") // we mark uninitialized ids to be -1, not being equal to -1 means the camera has already been associated to a propare camera index
                     continue;
 
                 // -- see if this line contains the desired bus id for this camera --
@@ -97,7 +97,7 @@ namespace MultiUsbCamera
         bool allCameraOk = true;
         for (auto it = cameraConfigs.begin(); it != cameraConfigs.end(); it++)
         {
-            if (it->deviceId == "-1")
+            if (it->deviceId == "-1" && it->busId != "extra")
             {
                 allCameraOk = false;
                 ROS_WARN_STREAM("--> Camera for {" << it->busId << "} was not found!!!");
@@ -107,8 +107,8 @@ namespace MultiUsbCamera
                 ROS_INFO_STREAM("--> Camera for {" << it->busId << "} was found successfully :)");
             }
 
-            std::cout << std::endl
-                      << *it << std::endl;
+            // std::cout << std::endl
+            //           << *it << std::endl;
         }
 
         return allCameraOk;

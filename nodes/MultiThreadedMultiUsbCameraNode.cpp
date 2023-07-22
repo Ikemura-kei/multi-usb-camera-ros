@@ -15,6 +15,7 @@
 #include <GetUserConfig.hpp>
 #include <robot_msgs/CameraCmd.h>
 #include <GetCameraIdByBusId.hpp>
+#include <opencv2/opencv.hpp>
 #include <chrono>
 #include <cstdio>
 #include <iostream>
@@ -29,6 +30,7 @@
 // -- helper functions --
 static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg); // camera switching command from micro-controllers
 void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera);
+void drawConnectionStates(cv::Mat &frame, std::vector<MultiUsbCamera::UsbCamera> cameras);
 
 // -- globals --
 static int numCam = 0;
@@ -81,7 +83,7 @@ int main(int ac, char **av)
     while (ros::ok())
     {
         ros::spinOnce();
-        
+
         // -- if this is true, some cameras were not found at initialization time, so we keep finding them with a fixed period --
         if (!allCameraInitialized && (ros::Time::now() - lastReconnectionAttemptTime).toSec() >= RECONNECTION_ATTEMPT_PERIOD)
         {
@@ -101,8 +103,15 @@ int main(int ac, char **av)
 
         // -- retreive the current frame of the currently selected camera --
         bool success = cameras[curCamIdx].getFrame(curFrame);
-        if (!success)
-            continue;
+
+        if (cameras[curCamIdx].getConfig().cameraName == "camera_states")
+        {
+            drawConnectionStates(curFrame, cameras);
+        }
+        else
+        {
+            curFrame.setTo(200, curFrame > 249);
+        }
 
         cv::imshow("video", curFrame);
         char k = cv::waitKey(1);
@@ -117,6 +126,7 @@ int main(int ac, char **av)
 
 void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera)
 {
+    static ros::Rate rate(20); // Clamp 20Hz
 #if VERBOSE
     auto lastTime = std::chrono::high_resolution_clock::now();
 #endif
@@ -128,6 +138,7 @@ void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera)
 #endif
 
         usbCamera->updateFrame();
+        rate.sleep();
 
 #if VERBOSE
         std::cout << usbCamera->getConfig().cameraName << ": " << duration.count() / 1000000.0 << std::endl;
@@ -138,4 +149,20 @@ void cameraThreadFunc(MultiUsbCamera::UsbCamera *usbCamera)
 static void camCmdCb(const robot_msgs::CameraCmdConstPtr &msg)
 {
     curCamIdx = msg->camera_id % numCam;
+}
+
+void drawConnectionStates(cv::Mat &frame, std::vector<MultiUsbCamera::UsbCamera> cameras)
+{
+    int cnt = 0;
+    for (auto cam : cameras)
+    {
+        if (cam.getConfig().busId == "extra")
+            continue;
+        // std::cout << "--> Camera is " << cam.isCameraOK << std::endl;
+        cnt += 1;
+        std::string cameraString = std::string("<") + cam.getConfig().cameraName + std::string(">");
+        cv::putText(frame, cameraString, cv::Point(200, 71 + cnt * 36), cv::FONT_ITALIC, 1.12114514, cv::Scalar(255, 12, 120), 3);
+        std::string stateString = (cam.isCameraOK ? std::string("TRUE") : std::string("FALSE"));
+        cv::putText(frame, stateString, cv::Point(589, 71 + cnt * 35), cv::FONT_ITALIC, 1.12114514, (cam.isCameraOK ? cv::Scalar(2, 129, 2) : cv::Scalar(15, 15, 255)), 3);
+    }
 }

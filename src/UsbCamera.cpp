@@ -37,6 +37,8 @@ namespace MultiUsbCamera
         this->config = other.config;
         this->header = other.header;
         this->imgPub = other.imgPub;
+        this->isCameraOK = other.isCameraOK;
+        this->wholeBlack = other.wholeBlack;
 
         initFrameSubstitution();
 
@@ -48,6 +50,10 @@ namespace MultiUsbCamera
         if (this->config.deviceId == "-1")
         {
             return false; // the associated device id was not found yet, no way we can initialize camera
+        }
+        if (this->config.busId == "extra")
+        {
+            return true;
         }
 
         // -- construct the gstreamer configuration stream --
@@ -80,6 +86,8 @@ namespace MultiUsbCamera
     {
         this->lastReconnectionTime = ros::Time::now();
 
+        this->wholeBlack = cv::Mat::zeros(this->config.imageResizedSize, CV_8UC3);
+
         // int deviceIndex = std::stoi(this->config.deviceId);
         // this->cap = cv::VideoCapture(deviceIndex);
 
@@ -91,12 +99,14 @@ namespace MultiUsbCamera
         this->imgPub = nh.advertise<sensor_msgs::Image>(std::string("/cameras/") + this->config.cameraName, 10);
 
         initFrameSubstitution();
+
+        this->lastFrameTime = ros::Time::now();
     }
 
     void UsbCamera::initFrameSubstitution()
     {
         this->noFrameSubstitution = cv::Mat::zeros(cv::Size(this->IMG_WIDTH, this->IMG_HEIGHT), CV_8UC1);
-        cv::putText(this->noFrameSubstitution, "No Frame Retreived!!! Camera Disconnected.", cv::Point(((int)(this->IMG_WIDTH / 2), (int)(this->IMG_HEIGHT / 2))), cv::FONT_ITALIC, 1.5, 255, 2);
+        cv::putText(this->noFrameSubstitution, "No Frame Retreived!!! Camera Disconnected.", cv::Point(20, 300), cv::FONT_ITALIC, 1.5, 255, 2);
     }
 
     void UsbCamera::updateCameraId(std::string newId)
@@ -109,6 +119,7 @@ namespace MultiUsbCamera
         bool imValid = false;
         if (this->isInitialized)
         {
+            this->isCameraOK = true;
             cap >> out;
             imValid = !out.empty() && cap.isOpened();
 
@@ -141,10 +152,12 @@ namespace MultiUsbCamera
                 if (this->isInitialized)
                 {
                     ROS_INFO_STREAM("--> Camera reconnected!!! Id is: {" << config.cameraName << "}");
+                    this->isCameraOK = true;
                 }
                 else
                 {
                     ROS_WARN_STREAM("--> Reconnection failed!!! Id is {" << config.cameraName << "}");
+                    this->isCameraOK = false;
                 }
             }
         }
@@ -154,11 +167,23 @@ namespace MultiUsbCamera
 
     bool UsbCamera::getFrame(cv::Mat &out)
     {
+        if (this->config.busId == "extra")
+        {
+            this->wholeBlack.copyTo(out);
+            cv::putText(out, this->config.cameraName, cv::Point(50, 50), cv::FONT_ITALIC, 1.25, cv::Scalar(5, 255, 5), 3);
+            return true;
+        }
+
+        // ROS_INFO_STREAM("--> Camera {" << config.cameraName << "} is connected? " << (this->isInitialized ? "YES" : "NO"));
         if (frame.empty() || !cap.isOpened() || !this->isInitialized)
         {
+            // ROS_INFO_STREAM("--> Camera error, returning dummy frame");
             this->noFrameSubstitution.copyTo(out);
             cv::resize(out, out, config.imageResizedSize);
-            cv::putText(out, this->config.cameraName, cv::Point(50, 50), cv::FONT_ITALIC, 1.25, cv::Scalar(255, 255, 255), 3);
+            cv::putText(out, this->config.cameraName, cv::Point(50, 50), cv::FONT_ITALIC, 1.25, cv::Scalar(0, 255, 0), 3);
+            std::string reconnectionLog = "Reconnection counter: " + std::to_string(this->reconnectionCounter);
+            cv::putText(out, reconnectionLog, cv::Point(20, 395), cv::FONT_ITALIC, 1.25, cv::Scalar(255, 255, 255), 3);
+
             return false;
         }
 
@@ -168,7 +193,7 @@ namespace MultiUsbCamera
 
         // -- post processings --
         cv::resize(out, out, config.imageResizedSize);
-        cv::putText(out, this->config.cameraName, cv::Point(50, 50), cv::FONT_ITALIC, 1.25, cv::Scalar(255, 255, 255), 3);
+        cv::putText(out, this->config.cameraName, cv::Point(50, 50), cv::FONT_ITALIC, 1.25, cv::Scalar(0, 255, 0), 3);
 
         return true;
     }
@@ -199,6 +224,9 @@ namespace MultiUsbCamera
 
     bool UsbCamera::updateFrame()
     {
+        if (this->config.busId == "extra")
+            return true;
+
         cv::Mat tmp;
         cap >> tmp;
         bool imValid = !tmp.empty() && cap.isOpened() && this->isInitialized;
@@ -207,12 +235,18 @@ namespace MultiUsbCamera
 
         if (imValid)
         {
+            this->isCameraOK = true;
+
             if (config.cvRotateFlag != -1)
                 cv::rotate(tmp, tmp, config.cvRotateFlag);
 
             this->frameMutex.lock();
             tmp.copyTo(this->frame);
             this->frameMutex.unlock();
+
+            float duration = (ros::Time::now() - this->lastFrameTime).toSec();
+            // ROS_INFO_STREAM("--> FPS of {" << this->config.cameraName << "} is " << std::to_string(duration));
+            this->lastFrameTime = ros::Time::now();
 
             publish();
         }
@@ -228,10 +262,14 @@ namespace MultiUsbCamera
                 if (this->isInitialized)
                 {
                     ROS_INFO_STREAM("--> Camera reconnected!!! Id is: {" << config.cameraName << "}");
+                    this->reconnectionCounter = 0;
+                    this->isCameraOK = true;
                 }
                 else
                 {
                     ROS_WARN_STREAM("--> Reconnection failed!!! Id is {" << config.cameraName << "}");
+                    this->reconnectionCounter += 1;
+                    this->isCameraOK = false;
                 }
             }
         }
